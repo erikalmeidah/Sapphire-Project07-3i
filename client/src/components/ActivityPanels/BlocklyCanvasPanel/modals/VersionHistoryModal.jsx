@@ -60,6 +60,9 @@ export default function VersionHistoryModal(props) {
                     </Button>
                   </div>
                 </div>
+                <div id='item-content'>
+              Last saved on {getFormattedDate(lastAutoSave.updated_at)}
+            </div>
               </li>
             ) : null
           }
