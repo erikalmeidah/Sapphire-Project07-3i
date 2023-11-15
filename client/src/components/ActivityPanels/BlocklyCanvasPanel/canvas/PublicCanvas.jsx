@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useReducer } from 'react';
 import { Link } from 'react-router-dom';
 import '../../ActivityLevels.less';
-import { compileArduinoCode } from '../../Utils/helpers';
+import { compileArduinoCode, handleSave } from '../../Utils/helpers';
 import { message, Spin, Row, Col, Alert, Menu, Dropdown } from 'antd';
 import CodeModal from '../modals/CodeModal';
 import ConsoleModal from '../modals/ConsoleModal';
@@ -14,9 +14,20 @@ import {
 import ArduinoLogo from '../Icons/ArduinoLogo';
 import PlotterLogo from '../Icons/PlotterLogo';
 
+import LoginPromptModal from '../modals/LoginPromptModal';
+import { useNavigate } from 'react-router-dom';
+import { Modal, Button } from 'antd';
+import '../../../../Utils/requests.js'
+import '../../Utils/helpers'
+
 let plotId = 1;
 
 export default function PublicCanvas({ activity, isSandbox }) {
+  const [hoverSave, setHoverSave] = useState(false);
+  const [popupShow, setPopupShow] = useState(false);
+  const [userTypeShow, setUserTypeShow] = useState(false);
+  const navigate = useNavigate();
+
   const [hoverUndo, setHoverUndo] = useState(false);
   const [hoverRedo, setHoverRedo] = useState(false);
   const [hoverCompile, setHoverCompile] = useState(false);
@@ -154,6 +165,27 @@ export default function PublicCanvas({ activity, isSandbox }) {
     </Menu>
   );
 
+  function handleSaveClick() {
+    console.log("clicked!")
+  }
+
+  function handleExistingAccount() {
+    setPopupShow(false);
+    setUserTypeShow(true);
+  }
+
+  function handleTeacherLogin () {
+    const res = handleSave(activityRef.current, workspaceRef.current, null);
+    if (res.data) {
+    // needs to reroute to login page
+    navigate('/teacherlogin');
+    // temporarily save workspace
+    }
+    else {
+      console.log('Failed.')
+    }
+  }
+
   return (
     <div id='horizontal-container' className='flex flex-column'>
       <div className='flex flex-row'>
@@ -182,10 +214,33 @@ export default function PublicCanvas({ activity, isSandbox }) {
                       </Col>
                     </Row>
                   </Col>
-                  <Col flex='auto' />
-
                   <Col flex={'200px'}>
                     <Row>
+                      <Col className='flex flex-row' id='icon-align'>
+                          {/* <VersionHistoryModal
+                            saves={saves}
+                            lastAutoSave={lastAutoSave}
+                            defaultTemplate={activity}
+                            getFormattedDate={getFormattedDate}
+                            loadSave={loadSave}
+                            pushEvent={pushEvent}
+                          /> */}
+                          <button
+                            onClick={() => setPopupShow(true)}
+                            id='link'
+                            className='flex flex-column'
+                          >
+                            <i
+                              id='icon-btn'
+                              className='fa fa-save'
+                              onMouseEnter={() => setHoverSave(true)}
+                              onMouseLeave={() => setHoverSave(false)}
+                            />
+                            {hoverSave && (
+                              <div className='popup ModalCompile4'>Save</div>
+                            )}
+                          </button>
+                        </Col>
                       <Col className='flex flex-row'>
                         <button
                           onClick={handleUndo}
@@ -270,6 +325,26 @@ export default function PublicCanvas({ activity, isSandbox }) {
               </Col>
             </Row>
             <div id='blockly-canvas' />
+            <LoginPromptModal loginTrigger={popupShow} setLoginTrigger={setPopupShow}>
+              <h2>Login To Save Your Work</h2>
+              <div>
+                <button className='login-prompt-button' onClick={() => handleExistingAccount()}>I already have an account!</button>
+                <button className='login-prompt-button'>I want to create an account!</button>
+              </div>
+              <div>
+                <button className="login-prompt-button" onClick={() => setPopupShow(false)}>I want to keep working</button>
+              </div>
+            </LoginPromptModal>
+            <LoginPromptModal loginTrigger={userTypeShow} setLoginTrigger={setUserTypeShow}>
+              <h2>I am a...</h2>
+              <div>
+                <button className='login-prompt-button'>
+                  <a href='/'>Student!</a>
+                </button>
+                <button className='login-prompt-button' onClick={() => handleTeacherLogin()}>Teacher!</button>
+                <button className='login-prompt-button' onClick={() => handleTeacherLogin()}>Content Creator!</button>
+              </div>
+            </LoginPromptModal>
           </Spin>
         </div>
         <ConsoleModal
