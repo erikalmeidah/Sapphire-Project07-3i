@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState, useReducer } from 'react';
 import { Link } from 'react-router-dom';
 import '../../ActivityLevels.less';
-import { compileArduinoCode } from '../../Utils/helpers';
+import { compileArduinoCode, handleSave } from '../../Utils/helpers';
 import { message, Spin, Row, Col, Alert, Menu, Dropdown } from 'antd';
 import CodeModal from '../modals/CodeModal';
 import ConsoleModal from '../modals/ConsoleModal';
 import PlotterModal from '../modals/PlotterModal';
+import { getSaves } from '../../../../Utils/requests';
 import {
   connectToPort,
   handleCloseConnection,
@@ -19,6 +20,7 @@ let plotId = 1;
 export default function PublicCanvas({ activity, isSandbox }) {
   const [hoverUndo, setHoverUndo] = useState(false);
   const [hoverRedo, setHoverRedo] = useState(false);
+  const [hoverSave, setHoverSave] = useState(false);
   const [hoverCompile, setHoverCompile] = useState(false);
   const [hoverConsole, setHoverConsole] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
@@ -32,10 +34,73 @@ export default function PublicCanvas({ activity, isSandbox }) {
   const workspaceRef = useRef(null);
   const activityRef = useRef(null);
 
+  const replayRef = useRef([]);
+  const clicks = useRef(0);
+
   //Added save related consts
   const [saves, setSaves] = useState({});
   const [lastSavedTime, setLastSavedTime] = useState(null);
   const [lastAutoSave, setLastAutoSave] = useState(null);
+
+  const getFormattedDate = (value, locale = 'en-US') => {
+    console.log("inside getformatted date");
+    let output = new Date(value).toLocaleDateString(locale);
+    return output + ' ' + new Date(value).toLocaleTimeString(locale);
+  };
+
+  const loadSave = (selectedSave) => {
+    console.log("inside load save");
+    try {
+      let toLoad = activity.template;
+      if (selectedSave !== -1) {
+        if (lastAutoSave && selectedSave === -2) {
+          toLoad = lastAutoSave.workspace;
+          setLastSavedTime(getFormattedDate(lastAutoSave.updated_at));
+        } else if (saves.current && saves.current.id === selectedSave) {
+          toLoad = saves.current.workspace;
+          setLastSavedTime(getFormattedDate(saves.current.updated_at));
+        } else {
+          const s = saves.past.find((save) => save.id === selectedSave);
+          if (s) {
+            toLoad = s.workspace;
+            setLastSavedTime(getFormattedDate(s.updated_at));
+          } else {
+            message.error('Failed to restore save.');
+            return;
+          }
+        }
+      } else {
+        setLastSavedTime(null);
+      }
+      let xml = window.Blockly.Xml.textToDom(toLoad);
+      if (workspaceRef.current) workspaceRef.current.clear();
+      window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
+      workspaceRef.current.clearUndo();
+    } catch (e) {
+      message.error('Failed to load save.');
+    }
+  };
+
+  const pushEvent = (type, blockId = '') => {
+    
+    console.log("inside pushevent");
+    let blockType = '';
+    if (blockId !== '') {
+      let type = window.Blockly.mainWorkspace.getBlockById(blockId)?.type;
+      type ? blockType = type : blockType = ''; 
+    }
+
+    let xml = window.Blockly.Xml.workspaceToDom(workspaceRef.current);
+    let xml_text = window.Blockly.Xml.domToText(xml);
+    replayRef.current.push({
+      xml: xml_text,
+      action: type,
+      blockId: blockId,
+      blockType: blockType,
+      timestamp: Date.now(),
+      clicks: clicks.current,
+    });
+  };
 
   //Imported autosave functionality from student canvas
   useEffect(() => {
@@ -59,12 +124,16 @@ export default function PublicCanvas({ activity, isSandbox }) {
       clearInterval(autosaveInterval);
     };
   }, []);
-
+  
   //Imported manual save functionality from student canvas
   const handleManualSave = async () => {
+    console.log("Inside handle save!");
     // save workspace then update load save options
     pushEvent('save');
+    console.log("Inside handle save 2!");
     const res = await handleSave(activity.id, workspaceRef, replayRef.current);
+    console.log(replayRef.current);
+    console.log("Inside handle save 3!");
     if (res.err) {
       message.error(res.err);
     } else {
@@ -74,6 +143,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
 
     const savesRes = await getSaves(activity.id);
     if (savesRes.data) setSaves(savesRes.data);
+  
   };
 
   const setWorkspace = () => {
@@ -227,24 +297,21 @@ export default function PublicCanvas({ activity, isSandbox }) {
                     </Row>
                   </Col>
                   <Col flex='auto' />
-
-                  /*Added last saved time msg.*/
                   <Col flex={'300px'}>
                     {lastSavedTime ? `Last changes saved ${lastSavedTime}` : ''}
-                  </Col>
-
+                  </Col>  
                   <Col flex={'200px'}>
                     <Row>
-                      /*Added save button functionality (temp until other changes are pushed)*/
                       <Col className='flex flex-row' id='icon-align'>
-                        <VersionHistoryModal
+                      {/*
+                      <VersionHistoryModal
                           saves={saves}
                           lastAutoSave={lastAutoSave}
                           defaultTemplate={activity}
                           getFormattedDate={getFormattedDate}
                           loadSave={loadSave}
                           pushEvent={pushEvent}
-                        />
+                        >*/}
                         <button
                           onClick={handleManualSave}
                           id='link'
@@ -262,7 +329,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
                         </button>
                       </Col>
 
-                      <Col className='flex flex-row'>
+                      <Col className='flex flex-row' id='icon-align'>
                         <button
                           onClick={handleUndo}
                           id='link'
