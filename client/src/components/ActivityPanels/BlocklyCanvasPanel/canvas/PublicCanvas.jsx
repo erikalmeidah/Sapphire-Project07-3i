@@ -339,7 +339,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
               <h2>I am a...</h2>
               <div>
                 <button className='login-prompt-button'>
-                  <a href='/'>Student!</a>
+                  <a className='student-login-prompt' href='/'>Student!</a>
                 </button>
                 <button className='login-prompt-button' onClick={() => handleTeacherLogin()}>Teacher!</button>
                 <button className='login-prompt-button' onClick={() => handleTeacherLogin()}>Content Creator!</button>
