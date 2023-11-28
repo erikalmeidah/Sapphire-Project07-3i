@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../ActivityLevels.less';
-import { compileArduinoCode, handleUpdateWorkspace,  handleCreatorSaveActivityLevel, handleCreatorSaveActivity } from '../../Utils/helpers';
+import { compileArduinoCode, handleUpdateWorkspace,  handleCreatorSaveActivityLevel, handleCreatorSaveActivity, setLocalSandbox, handleSaveAsWorkspace } from '../../Utils/helpers';
 import { message, Spin, Row, Col, Alert, Menu, Dropdown } from 'antd';
 import CodeModal from '../modals/CodeModal';
 import ConsoleModal from '../modals/ConsoleModal';
@@ -18,6 +18,7 @@ import {
 import { getAuthorizedWorkspace } from '../../../../Utils/requests';
 import ArduinoLogo from '../Icons/ArduinoLogo';
 import PlotterLogo from '../Icons/PlotterLogo';
+import Replay from '../../../../views/Replay/Replay';
 
 let plotId = 1;
 
@@ -48,8 +49,8 @@ export default function MentorCanvas({ activity, isSandbox, setActivity,  isMent
   };
 
   useEffect(() => {
-    // once the activity state is set, set the workspace and save
-    const setUp = async () => {
+    // once the activity state is set, set the workspace and save 
+    const setUp = async () => {  
       const classroom = sessionStorage.getItem('classroomId');
       setClassroomId(classroom);
       activityRef.current = activity;
@@ -64,7 +65,19 @@ export default function MentorCanvas({ activity, isSandbox, setActivity,  isMent
         : window.Blockly.Xml.textToDom(activity.template);
       window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
         workspaceRef.current.clearUndo();
-      }
+      
+    }
+    if(localStorage.getItem("prevPage") == "/teacherlogin"){
+      console.log("Inside mentor canvas setup");
+      //handleUpdateWorkspace((localStorage.getItem("activity")).id, localStorage.getItem("workspace"));
+      workspaceRef.current = (localStorage.getItem("workspace")).current;
+      //setLocalSandbox(localStorage.getItem("workspace"));
+      /*activity.current = localStorage.getItem("activity");
+      workspaceRef.current = window.Blockly.inject(localStorage.getItem("workspace"), {
+        toolbox: document.getElementById('toolbox'),
+      });*/
+      handleSave();
+    }
     };
     setUp();
   }, [activity]);
