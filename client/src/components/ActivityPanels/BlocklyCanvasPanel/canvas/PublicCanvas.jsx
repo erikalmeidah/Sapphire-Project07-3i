@@ -136,7 +136,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
     localStorage.setItem("workspace", workspaceRef);
     localStorage.setItem("replay", replayRef);
     localStorage.setItem("prevPage", "/sandbox");
-    navigate("/teacherlogin");
+    navigate("/teacherlogin"); //Hardcoded for now, change later after merging in front-end team's work
 
     //ATTEMPT USING STUDENT CANVAS SAVE -- PERMISSION ERROR 401  
     // save workspace then update load save options
