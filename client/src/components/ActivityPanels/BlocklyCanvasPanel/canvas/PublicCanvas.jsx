@@ -15,6 +15,8 @@ import {
 import ArduinoLogo from '../Icons/ArduinoLogo';
 import PlotterLogo from '../Icons/PlotterLogo';
 
+import { useNavigate } from 'react-router-dom';
+
 let plotId = 1;
 
 export default function PublicCanvas({ activity, isSandbox }) {
@@ -36,6 +38,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
 
   const replayRef = useRef([]);
   const clicks = useRef(0);
+  const navigate = useNavigate();
 
   //Added save related consts
   const [saves, setSaves] = useState({});
@@ -127,14 +130,24 @@ export default function PublicCanvas({ activity, isSandbox }) {
   
   //Imported manual save functionality from student canvas
   const handleManualSave = async () => {
+    //ATTEMPT USING LOCAL STORAGE
     console.log("Inside handle save!");
+    localStorage.setItem("activity", activity);
+    localStorage.setItem("workspace", workspaceRef);
+    localStorage.setItem("replay", replayRef);
+    localStorage.setItem("prevPage", "/sandbox");
+    navigate("/teacherlogin");
+
+    //ATTEMPT USING STUDENT CANVAS SAVE -- PERMISSION ERROR 401  
     // save workspace then update load save options
-    pushEvent('save');
+    /*pushEvent('save');
     console.log("Inside handle save 2!");
     const res = await handleSave(activity.id, workspaceRef, replayRef.current);
+    console.log(activity.id);
+    console.log(workspaceRef);
     console.log(replayRef.current);
-    console.log("Inside handle save 3!");
     if (res.err) {
+      console.log("Inside error message!");
       message.error(res.err);
     } else {
       setLastSavedTime(getFormattedDate(res.data[0].updated_at));
@@ -143,7 +156,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
 
     const savesRes = await getSaves(activity.id);
     if (savesRes.data) setSaves(savesRes.data);
-  
+  */
   };
 
   const setWorkspace = () => {
