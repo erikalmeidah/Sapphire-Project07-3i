@@ -77,6 +77,7 @@ export default function MentorCanvas({ activity, isSandbox, setActivity,  isMent
         toolbox: document.getElementById('toolbox'),
       });*/
       handleSave();
+      //delete local storage's workspace, activity, prevPage, replay items.
     }
     };
     setUp();
