@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useReducer } from 'react';
 import { Link } from 'react-router-dom';
 import '../../ActivityLevels.less';
-import { compileArduinoCode, handleSave } from '../../Utils/helpers';
+import { compileArduinoCode, handlePublicSave, handleSave } from '../../Utils/helpers';
 import { message, Spin, Row, Col, Alert, Menu, Dropdown } from 'antd';
 import CodeModal from '../modals/CodeModal';
 import ConsoleModal from '../modals/ConsoleModal';
@@ -17,6 +17,7 @@ import PlotterLogo from '../Icons/PlotterLogo';
 import LoginPromptModal from '../modals/LoginPromptModal';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button } from 'antd';
+import { getSaves } from '../../../../Utils/requests';
 import '../../../../Utils/requests.js'
 import '../../Utils/helpers'
 
@@ -27,6 +28,8 @@ export default function PublicCanvas({ activity, isSandbox }) {
   const [popupShow, setPopupShow] = useState(false);
   const [userTypeShow, setUserTypeShow] = useState(false);
   const navigate = useNavigate();
+  const replayRef = useRef([]);
+  const clicks = useRef(0);
 
   const [hoverUndo, setHoverUndo] = useState(false);
   const [hoverRedo, setHoverRedo] = useState(false);
@@ -175,11 +178,11 @@ export default function PublicCanvas({ activity, isSandbox }) {
   }
 
   function handleTeacherLogin () {
-    const res = handleSave(activityRef.current, workspaceRef.current, null);
-    if (res.data) {
-    // needs to reroute to login page
-    navigate('/teacherlogin');
-    // temporarily save workspace
+    const res1 = handlePublicSave(workspaceRef);
+    if (res1.data) {
+      // needs to reroute to login page
+      navigate('/teacherlogin');
+      // temporarily save workspace
     }
     else {
       console.log('Failed.')
