@@ -29,30 +29,26 @@ export default function TeacherLogin() {
     setLoading(true);
     let body = { identifier: email.value, password: password.value };
 
-    //IF LOGGING IN FROM PUBLIC CANVAS
-    if(localStorage.getItem("prevPage") == "/sandbox"){
-      console.log("Inside teacher login!");
-      localStorage.setItem("prevPage", "/teacherlogin");
-    }
     postUser(body)
       .then((response) => {
-        
-          setUserSession(response.data.jwt, JSON.stringify(response.data.user));
-          setLoading(false);
+        setUserSession(response.data.jwt, JSON.stringify(response.data.user));
+        setLoading(false);
+        if(localStorage.getItem("fromSandbox") == "true"){
+            navigate("/sandbox");
+        }else{
           if (response.data.user.role.name === 'Content Creator') {
             navigate('/ccdashboard');
           } else if (response.data.user.role.name === 'Researcher') {
             navigate('/report');
           } else {
-            //IF TEACHER LOGIN
             navigate('/dashboard');
           }
-        })
-        .catch((error) => {
-          setLoading(false);
-          message.error('Login failed. Please input a valid email and password.');
-        });
-      
+        }
+      })
+      .catch((error) => {
+        setLoading(false);
+        message.error('Login failed. Please input a valid email and password.');
+      });
   };
 
   return (

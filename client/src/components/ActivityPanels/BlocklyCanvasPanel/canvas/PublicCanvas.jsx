@@ -87,7 +87,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
   }, []);
   
 
-  const handleManualSave = async () => {
+  async function handleManualSave(goTo) {
     //Manual save using local storage
     console.log("Inside handle save!");
 
@@ -112,9 +112,10 @@ export default function PublicCanvas({ activity, isSandbox }) {
     */
 
     //Set previous page flag
-    window.localStorage.setItem("prevPage", "/sandbox");
-    
-    navigate("/login");
+    window.localStorage.setItem("fromSandbox", "true");
+
+    //Navigate
+    navigate(goTo);
   };
   
   useEffect(() => {
@@ -242,18 +243,6 @@ export default function PublicCanvas({ activity, isSandbox }) {
     setUserTypeShow(true);
   }
 
-  function handleTeacherLogin () {
-    const res1 = handlePublicSave(workspaceRef);
-    if (res1.data) {
-      // needs to reroute to login page
-      navigate('/teacherlogin');
-      // temporarily save workspace
-    }
-    else {
-      console.log('Failed.')
-    }
-  }
-
   return (
     <div id='horizontal-container' className='flex flex-column'>
       <div className='flex flex-row'>
@@ -285,14 +274,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
                   <Col flex={'200px'}>
                     <Row>
                       <Col className='flex flex-row' id='icon-align'>
-                          {/* <VersionHistoryModal
-                            saves={saves}
-                            lastAutoSave={lastAutoSave}
-                            defaultTemplate={activity}
-                            getFormattedDate={getFormattedDate}
-                            loadSave={loadSave}
-                            pushEvent={pushEvent}
-                          /> */}
+                          {}
                           <button
                             onClick={() => setPopupShow(true)}
                             id='link'
@@ -407,10 +389,10 @@ export default function PublicCanvas({ activity, isSandbox }) {
               <h2>I am a...</h2>
               <div>
                 <button className='login-prompt-button'>
-                  <a className='student-login-prompt' href='/'>Student!</a>
+                  <a className='student-login-prompt' onClick={() => handleManualSave("/")}>Student!</a>
                 </button>
-                <button className='login-prompt-button' onClick={() => handleTeacherLogin()}>Teacher!</button>
-                <button className='login-prompt-button' onClick={() => handleTeacherLogin()}>Content Creator!</button>
+                <button className='login-prompt-button' onClick={() => handleManualSave("/teacherlogin")}>Teacher!</button>
+                <button className='login-prompt-button' onClick={() => handleManualSave("/teacherlogin")}>Content Creator!</button>
               </div>
             </LoginPromptModal>
           </Spin>

@@ -17,8 +17,6 @@ import ArduinoLogo from '../Icons/ArduinoLogo';
 import PlotterLogo from '../Icons/PlotterLogo';
 import { useNavigate } from 'react-router-dom';
 
-//import { jsonc } from 'jsonc';
-
 let plotId = 1;
 
 export default function StudentCanvas({ activity }) {
@@ -209,9 +207,8 @@ export default function StudentCanvas({ activity }) {
           workspaceRef.current.clearUndo();
         }
       
-      if(localStorage.getItem("prevPage") == "/studentlogin"){
+      if(localStorage.getItem("fromSandbox") == "true"){
         console.log("Inside student canvas setup");
-
         //Update Workspace
         let workspaceXML = window.localStorage.getItem("workspace");
         let workspaceDOM = window.Blockly.Xml.textToDom(workspaceXML);
@@ -220,7 +217,7 @@ export default function StudentCanvas({ activity }) {
         console.log("Workspace updated.");
 
         //Update activity
-        let activityXML = window.localStorage.getItem("activity");
+        //let activityXML = window.localStorage.getItem("activity");
         //let activityDOM = window.Blockly.Xml.textToDom(activityXML);
         //console.log(activityXML);
         //activityRef.current = activityXML;
@@ -238,7 +235,7 @@ export default function StudentCanvas({ activity }) {
         localStorage.removeItem("workspace");
         //localStorage.removeItem("activity");
         //localStorage.removeItem("replay");
-        localStorage.removeItem("prevPage");
+        localStorage.removeItem("fromSandbox");
         console.log("local storage cleared.");
 
         //Call save
