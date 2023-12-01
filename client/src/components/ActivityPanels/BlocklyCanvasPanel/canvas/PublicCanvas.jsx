@@ -53,6 +53,71 @@ export default function PublicCanvas({ activity, isSandbox }) {
   };
 
   useEffect(() => {
+    // automatically save workspace every min
+    let autosaveInterval = setInterval(async () => {
+      console.log("Inside auto save!");
+      
+      //Update local storage values
+      //save workspace
+      var xmlDom = Blockly.Xml.workspaceToDom(workspaceRef.current);
+      var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+      window.localStorage.setItem("workspace", xmlText);
+      console.log(xmlText);
+
+      
+      //save activity 
+      //let xmlDomActivity = window.Blockly.Xml.workspaceToDom(activity.current);
+      //var xmlTextActivity = Blockly.Xml.domToPrettyText(xmlDomActivity);
+      window.localStorage.setItem("activity", activityRef.current);
+      console.log(xmlTextActivity);
+
+      /*
+      //save replay
+      let xmlDomReplay = window.Blockly.Xml.workspaceToDom(replayRef.current);
+      var xmlTextReplay = Blockly.Xml.domToPrettyText(xmlDomReplay);
+      window.localStorage.setItem("replay", xmlTextReplay);
+      console.log(xmlTextReplay);
+      */
+    }, 60000);
+
+    // clean up - saves workspace and removes blockly div from DOM
+    return async () => {
+      clearInterval(autosaveInterval);
+    };
+  }, []);
+  
+
+  const handleManualSave = async () => {
+    //Manual save using local storage
+    console.log("Inside handle save!");
+
+    //save workspace
+    var xmlDom = Blockly.Xml.workspaceToDom(workspaceRef.current);
+    var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+    window.localStorage.setItem("workspace", xmlText);
+    console.log(xmlText);
+
+    /*
+    //save activity 
+    let xmlDomActivity = window.Blockly.Xml.workspaceToDom(activity.current);
+    var xmlTextActivity = Blockly.Xml.domToPrettyText(xmlDomActivity);
+    window.localStorage.setItem("activity", xmlTextActivity);
+    console.log(xmlTextActivity);
+
+    //save replay
+    let xmlDomReplay = window.Blockly.Xml.workspaceToDom(replayRef.current);
+    var xmlTextReplay = Blockly.Xml.domToPrettyText(xmlDomReplay);
+    window.localStorage.setItem("replay", xmlTextReplay);
+    console.log(xmlTextReplay);
+    */
+
+    //Set previous page flag
+    window.localStorage.setItem("prevPage", "/sandbox");
+    
+    navigate("/login");
+  };
+  
+  useEffect(() => {
     // once the activity state is set, set the workspace and save
     const setUp = async () => {
       activityRef.current = activity;
