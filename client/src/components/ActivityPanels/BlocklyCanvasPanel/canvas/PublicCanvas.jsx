@@ -17,6 +17,8 @@ import PlotterLogo from '../Icons/PlotterLogo';
 
 import { useNavigate } from 'react-router-dom';
 
+//import { jsonc } from 'jsonc';
+
 let plotId = 1;
 
 export default function PublicCanvas({ activity, isSandbox }) {
@@ -105,21 +107,33 @@ export default function PublicCanvas({ activity, isSandbox }) {
     });
   };
 
-  //Imported autosave functionality from student canvas
+
   useEffect(() => {
     // automatically save workspace every min
     let autosaveInterval = setInterval(async () => {
-      if (workspaceRef.current && activityRef.current) {
-        const res = await handleSave(
-          activityRef.current.id,
-          workspaceRef,
-          replayRef.current
-        );
-        if (res.data) {
-          setLastAutoSave(res.data[0]);
-          setLastSavedTime(getFormattedDate(res.data[0].updated_at));
-        }
-      }
+      console.log("Inside auto save!");
+      
+      //Update local storage values
+      //save workspace
+      var xmlDom = Blockly.Xml.workspaceToDom(workspaceRef.current);
+      var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+      window.localStorage.setItem("workspace", xmlText);
+      console.log(xmlText);
+
+      
+      //save activity 
+      //let xmlDomActivity = window.Blockly.Xml.workspaceToDom(activity.current);
+      //var xmlTextActivity = Blockly.Xml.domToPrettyText(xmlDomActivity);
+      window.localStorage.setItem("activity", activityRef.current);
+      console.log(xmlTextActivity);
+
+      /*
+      //save replay
+      let xmlDomReplay = window.Blockly.Xml.workspaceToDom(replayRef.current);
+      var xmlTextReplay = Blockly.Xml.domToPrettyText(xmlDomReplay);
+      window.localStorage.setItem("replay", xmlTextReplay);
+      console.log(xmlTextReplay);
+      */
     }, 60000);
 
     // clean up - saves workspace and removes blockly div from DOM
@@ -128,35 +142,35 @@ export default function PublicCanvas({ activity, isSandbox }) {
     };
   }, []);
   
-  //Imported manual save functionality from student canvas
+
   const handleManualSave = async () => {
-    //ATTEMPT USING LOCAL STORAGE
+    //Manual save using local storage
     console.log("Inside handle save!");
-    localStorage.setItem("activity", activity);
-    localStorage.setItem("workspace", workspaceRef);
-    localStorage.setItem("replay", replayRef);
-    localStorage.setItem("prevPage", "/sandbox");
-    navigate("/teacherlogin"); //Hardcoded for now, change later after merging in front-end team's work
 
-    //ATTEMPT USING STUDENT CANVAS SAVE -- PERMISSION ERROR 401  
-    // save workspace then update load save options
-    /*pushEvent('save');
-    console.log("Inside handle save 2!");
-    const res = await handleSave(activity.id, workspaceRef, replayRef.current);
-    console.log(activity.id);
-    console.log(workspaceRef);
-    console.log(replayRef.current);
-    if (res.err) {
-      console.log("Inside error message!");
-      message.error(res.err);
-    } else {
-      setLastSavedTime(getFormattedDate(res.data[0].updated_at));
-      message.success('Workspace saved successfully.');
-    }
+    //save workspace
+    var xmlDom = Blockly.Xml.workspaceToDom(workspaceRef.current);
+    var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+    window.localStorage.setItem("workspace", xmlText);
+    console.log(xmlText);
 
-    const savesRes = await getSaves(activity.id);
-    if (savesRes.data) setSaves(savesRes.data);
-  */
+    /*
+    //save activity 
+    let xmlDomActivity = window.Blockly.Xml.workspaceToDom(activity.current);
+    var xmlTextActivity = Blockly.Xml.domToPrettyText(xmlDomActivity);
+    window.localStorage.setItem("activity", xmlTextActivity);
+    console.log(xmlTextActivity);
+
+    //save replay
+    let xmlDomReplay = window.Blockly.Xml.workspaceToDom(replayRef.current);
+    var xmlTextReplay = Blockly.Xml.domToPrettyText(xmlDomReplay);
+    window.localStorage.setItem("replay", xmlTextReplay);
+    console.log(xmlTextReplay);
+    */
+
+    //Set previous page flag
+    window.localStorage.setItem("prevPage", "/sandbox");
+    
+    navigate("/login");
   };
 
   const setWorkspace = () => {
