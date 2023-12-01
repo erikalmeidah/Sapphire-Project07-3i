@@ -2,56 +2,48 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/saves",
-      "handler": "save.find",
+      "path": "/public-saves",
+      "handler": "public-saves.find",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/saves/count",
-      "handler": "save.count",
+      "path": "/public-saves/count",
+      "handler": "public-saves.count",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/saves/activity/:activity",
-      "handler": "save.findByActivity",
-      "config": {
-        "policies": []
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/saves/:id",
-      "handler": "save.findOne",
+      "path": "/public-saves/:id",
+      "handler": "public-saves.findOne",
       "config": {
         "policies": []
       }
     },
     {
       "method": "POST",
-      "path": "/saves",
-      "handler": "save.create",
+      "path": "/public-saves",
+      "handler": "public-saves.create",
       "config": {
         "policies": []
       }
     },
     {
       "method": "PUT",
-      "path": "/saves/:id",
-      "handler": "save.update",
+      "path": "/public-saves/:id",
+      "handler": "public-saves.update",
       "config": {
         "policies": []
       }
     },
     {
       "method": "DELETE",
-      "path": "/saves/:id",
-      "handler": "save.delete",
+      "path": "/public-saves/:id",
+      "handler": "public-saves.delete",
       "config": {
         "policies": []
       }

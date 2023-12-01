@@ -1,79 +1,134 @@
-
 #colors() {
-    primary: #3D5C82;
-    secondary: #5BABDE;
-    tertiary: #F4F4F5;
-    quaternary: #F3D250;
-    quinary:#F1C307; 
-    senary: #E9E9E9;
-    text-primary: #414141;
-    text-secondary: #FFFFFF;
+  primary: #3d5c82;
+  secondary: #5babde;
+  tertiary: #f4f4f5;
+  quaternary: #f3d250;
+  quinary: #f1c307;
+  senary: #e9e9e9;
+  text-primary: #414141;
+  text-secondary: #ffffff;
 }
 
 .flex {
-    display: flex;
+  display: flex;
 }
 
 .flex-column {
-    flex-direction: column;
+  flex-direction: column;
 }
 
 .flex-row {
-    flex-direction: row;
+  flex-direction: row;
 }
 
 .space-between {
-    justify-content: space-between;
+  justify-content: space-between;
 }
 
 .justify-end {
-    justify-content: flex-end;
+  justify-content: flex-end;
 }
 
 .justify-center {
-    justify-content: center;
+  justify-content: center;
 }
 
 .container {
-    height: 100%;
-    width: 100%;
-    background-color: #colors[primary];
-    min-height: 100vh;
-    overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+  background-color: #colors[primary];
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 .container::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .vertical-container {
-    margin: 1.5em;
+  margin: 1.5em;
 }
 
 .hvr-info {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .card {
-    background-color: #colors[tertiary];
-    padding: .7em;
+  background-color: #colors[tertiary];
+  padding: 0.7em;
 }
 
 .overflow-visible {
-    overflow: visible;
+  overflow: visible;
 }
 
 .overflow-hidden {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .nav-padding {
-    padding-top: 8vh;
+  padding-top: 8vh;
 }
 
 .replayButton {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .bold {
-    font-weight: bold;
+  font-weight: bold;
+}
+
+.login-popup {
+  color: #colors[senary];
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.2);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// .login-popup {
+//     font-size: 12px;
+//     color: #colors[text-secondary];
+//     background-color: rgb(68, 68, 68);
+//     padding: 8px;
+//     border: none;
+//     border-radius: 4px;
+//     position: absolute;
+//     z-index: 1;
+
+//     right: 11vw;
+//     top: 12.5vh;
+// }
+
+.login-popup-inner {
+  position: relative;
+  padding: 32px;
+  width: 100%;
+  max-width: 640px;
+  background-color: #colors[senary];
+  border: 2px solid #5babde;
+}
+
+.login-popup-inner .login-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: #colors[text-primary];
+}
+
+.login-prompt-button {
+  color: white;
+  background-color: #3d5c82;
+  margin: 5px;
+  border-radius: 10px;
+}
+
+.student-login-prompt {
+    color: white !important;
+    text-decoration: none !important;
 }

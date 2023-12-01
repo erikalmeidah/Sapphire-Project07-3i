@@ -262,6 +262,17 @@ export const saveWorkspace = async (activity, workspace, replay) =>
     error: 'Failed to save your workspace.',
   });
 
+export const savePublicSave = async (workspace) =>
+  makeRequest({
+    method: POST,
+    path: `${server}/public-saves`,
+    data: {
+      workspace,
+    },
+    auth: true,
+    error: 'Failed to save your workspace.',
+});
+
 export const getSaves = async (activity) =>
   makeRequest({
     method: GET,

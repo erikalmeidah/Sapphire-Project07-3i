@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState, useReducer } from 'react';
 import { Link } from 'react-router-dom';
 import '../../ActivityLevels.less';
-import { compileArduinoCode, handleSave } from '../../Utils/helpers';
+import { compileArduinoCode, handlePublicSave, handleSave } from '../../Utils/helpers';
 import { message, Spin, Row, Col, Alert, Menu, Dropdown } from 'antd';
 import CodeModal from '../modals/CodeModal';
 import ConsoleModal from '../modals/ConsoleModal';
 import PlotterModal from '../modals/PlotterModal';
-import { getSaves } from '../../../../Utils/requests';
 import {
   connectToPort,
   handleCloseConnection,
@@ -15,16 +14,25 @@ import {
 import ArduinoLogo from '../Icons/ArduinoLogo';
 import PlotterLogo from '../Icons/PlotterLogo';
 
+import LoginPromptModal from '../modals/LoginPromptModal';
 import { useNavigate } from 'react-router-dom';
-
-//import { jsonc } from 'jsonc';
+import { Modal, Button } from 'antd';
+import { getSaves } from '../../../../Utils/requests';
+import '../../../../Utils/requests.js'
+import '../../Utils/helpers'
 
 let plotId = 1;
 
 export default function PublicCanvas({ activity, isSandbox }) {
+  const [hoverSave, setHoverSave] = useState(false);
+  const [popupShow, setPopupShow] = useState(false);
+  const [userTypeShow, setUserTypeShow] = useState(false);
+  const navigate = useNavigate();
+  const replayRef = useRef([]);
+  const clicks = useRef(0);
+
   const [hoverUndo, setHoverUndo] = useState(false);
   const [hoverRedo, setHoverRedo] = useState(false);
-  const [hoverSave, setHoverSave] = useState(false);
   const [hoverCompile, setHoverCompile] = useState(false);
   const [hoverConsole, setHoverConsole] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
@@ -38,75 +46,11 @@ export default function PublicCanvas({ activity, isSandbox }) {
   const workspaceRef = useRef(null);
   const activityRef = useRef(null);
 
-  const replayRef = useRef([]);
-  const clicks = useRef(0);
-  const navigate = useNavigate();
-
-  //Added save related consts
-  const [saves, setSaves] = useState({});
-  const [lastSavedTime, setLastSavedTime] = useState(null);
-  const [lastAutoSave, setLastAutoSave] = useState(null);
-
-  const getFormattedDate = (value, locale = 'en-US') => {
-    console.log("inside getformatted date");
-    let output = new Date(value).toLocaleDateString(locale);
-    return output + ' ' + new Date(value).toLocaleTimeString(locale);
-  };
-
-  const loadSave = (selectedSave) => {
-    console.log("inside load save");
-    try {
-      let toLoad = activity.template;
-      if (selectedSave !== -1) {
-        if (lastAutoSave && selectedSave === -2) {
-          toLoad = lastAutoSave.workspace;
-          setLastSavedTime(getFormattedDate(lastAutoSave.updated_at));
-        } else if (saves.current && saves.current.id === selectedSave) {
-          toLoad = saves.current.workspace;
-          setLastSavedTime(getFormattedDate(saves.current.updated_at));
-        } else {
-          const s = saves.past.find((save) => save.id === selectedSave);
-          if (s) {
-            toLoad = s.workspace;
-            setLastSavedTime(getFormattedDate(s.updated_at));
-          } else {
-            message.error('Failed to restore save.');
-            return;
-          }
-        }
-      } else {
-        setLastSavedTime(null);
-      }
-      let xml = window.Blockly.Xml.textToDom(toLoad);
-      if (workspaceRef.current) workspaceRef.current.clear();
-      window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
-      workspaceRef.current.clearUndo();
-    } catch (e) {
-      message.error('Failed to load save.');
-    }
-  };
-
-  const pushEvent = (type, blockId = '') => {
-    
-    console.log("inside pushevent");
-    let blockType = '';
-    if (blockId !== '') {
-      let type = window.Blockly.mainWorkspace.getBlockById(blockId)?.type;
-      type ? blockType = type : blockType = ''; 
-    }
-
-    let xml = window.Blockly.Xml.workspaceToDom(workspaceRef.current);
-    let xml_text = window.Blockly.Xml.domToText(xml);
-    replayRef.current.push({
-      xml: xml_text,
-      action: type,
-      blockId: blockId,
-      blockType: blockType,
-      timestamp: Date.now(),
-      clicks: clicks.current,
+  const setWorkspace = () => {
+    workspaceRef.current = window.Blockly.inject('blockly-canvas', {
+      toolbox: document.getElementById('toolbox'),
     });
   };
-
 
   useEffect(() => {
     // automatically save workspace every min
@@ -172,13 +116,7 @@ export default function PublicCanvas({ activity, isSandbox }) {
     
     navigate("/login");
   };
-
-  const setWorkspace = () => {
-    workspaceRef.current = window.Blockly.inject('blockly-canvas', {
-      toolbox: document.getElementById('toolbox'),
-    });
-  };
-
+  
   useEffect(() => {
     // once the activity state is set, set the workspace and save
     const setUp = async () => {
@@ -295,6 +233,27 @@ export default function PublicCanvas({ activity, isSandbox }) {
     </Menu>
   );
 
+  function handleSaveClick() {
+    console.log("clicked!")
+  }
+
+  function handleExistingAccount() {
+    setPopupShow(false);
+    setUserTypeShow(true);
+  }
+
+  function handleTeacherLogin () {
+    const res1 = handlePublicSave(workspaceRef);
+    if (res1.data) {
+      // needs to reroute to login page
+      navigate('/teacherlogin');
+      // temporarily save workspace
+    }
+    else {
+      console.log('Failed.')
+    }
+  }
+
   return (
     <div id='horizontal-container' className='flex flex-column'>
       <div className='flex flex-row'>
@@ -323,40 +282,34 @@ export default function PublicCanvas({ activity, isSandbox }) {
                       </Col>
                     </Row>
                   </Col>
-                  <Col flex='auto' />
-                  <Col flex={'300px'}>
-                    {lastSavedTime ? `Last changes saved ${lastSavedTime}` : ''}
-                  </Col>  
                   <Col flex={'200px'}>
                     <Row>
                       <Col className='flex flex-row' id='icon-align'>
-                      {/*
-                      <VersionHistoryModal
-                          saves={saves}
-                          lastAutoSave={lastAutoSave}
-                          defaultTemplate={activity}
-                          getFormattedDate={getFormattedDate}
-                          loadSave={loadSave}
-                          pushEvent={pushEvent}
-                        >*/}
-                        <button
-                          onClick={handleManualSave}
-                          id='link'
-                          className='flex flex-column'
-                        >
-                          <i
-                            id='icon-btn'
-                            className='fa fa-save'
-                            onMouseEnter={() => setHoverSave(true)}
-                            onMouseLeave={() => setHoverSave(false)}
-                          />
-                          {hoverSave && (
-                            <div className='popup ModalCompile4'>Save</div>
-                          )}
-                        </button>
-                      </Col>
-
-                      <Col className='flex flex-row' id='icon-align'>
+                          {/* <VersionHistoryModal
+                            saves={saves}
+                            lastAutoSave={lastAutoSave}
+                            defaultTemplate={activity}
+                            getFormattedDate={getFormattedDate}
+                            loadSave={loadSave}
+                            pushEvent={pushEvent}
+                          /> */}
+                          <button
+                            onClick={() => setPopupShow(true)}
+                            id='link'
+                            className='flex flex-column'
+                          >
+                            <i
+                              id='icon-btn'
+                              className='fa fa-save'
+                              onMouseEnter={() => setHoverSave(true)}
+                              onMouseLeave={() => setHoverSave(false)}
+                            />
+                            {hoverSave && (
+                              <div className='popup ModalCompile4'>Save</div>
+                            )}
+                          </button>
+                        </Col>
+                      <Col className='flex flex-row'>
                         <button
                           onClick={handleUndo}
                           id='link'
@@ -440,6 +393,26 @@ export default function PublicCanvas({ activity, isSandbox }) {
               </Col>
             </Row>
             <div id='blockly-canvas' />
+            <LoginPromptModal loginTrigger={popupShow} setLoginTrigger={setPopupShow}>
+              <h2>Login To Save Your Work</h2>
+              <div>
+                <button className='login-prompt-button' onClick={() => handleExistingAccount()}>I already have an account!</button>
+                <button className='login-prompt-button'>I want to create an account!</button>
+              </div>
+              <div>
+                <button className="login-prompt-button" onClick={() => setPopupShow(false)}>I want to keep working</button>
+              </div>
+            </LoginPromptModal>
+            <LoginPromptModal loginTrigger={userTypeShow} setLoginTrigger={setUserTypeShow}>
+              <h2>I am a...</h2>
+              <div>
+                <button className='login-prompt-button'>
+                  <a className='student-login-prompt' href='/'>Student!</a>
+                </button>
+                <button className='login-prompt-button' onClick={() => handleTeacherLogin()}>Teacher!</button>
+                <button className='login-prompt-button' onClick={() => handleTeacherLogin()}>Content Creator!</button>
+              </div>
+            </LoginPromptModal>
           </Spin>
         </div>
         <ConsoleModal
