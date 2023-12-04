@@ -133,6 +133,40 @@ export default function ContentCreatorCanvas({
         window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
         workspaceRef.current.clearUndo();
       }
+      if(localStorage.getItem("fromSandbox") == "true"){
+        console.log("Inside CC canvas setup");
+        //Update Workspace
+        let workspaceXML = window.localStorage.getItem("workspace");
+        let workspaceDOM = window.Blockly.Xml.textToDom(workspaceXML);
+        console.log(workspaceXML);
+        window.Blockly.Xml.domToWorkspace(workspaceDOM, workspaceRef.current);
+        console.log("Workspace updated.");
+
+        //Update activity
+        //let activityXML = window.localStorage.getItem("activity");
+        //let activityDOM = window.Blockly.Xml.textToDom(activityXML);
+        //console.log(activityXML);
+        //activityRef.current = activityXML;
+        //window.Blockly.Xml(workspaceDOM, workspaceRef.current);
+        //console.log("activity updated.");
+        /*
+        //Update replay
+        let replayXML = window.localStorage.getItem("replay");
+        let replayDOM = window.Blockly.Xml.textToDom(replayXML);
+        console.log(replayXML);
+        //window.Blockly.Xml.domToWorkspace(workspaceDOM, workspaceRef.current);
+        console.log("replay updated");
+        */
+        //Clear local storage
+        localStorage.removeItem("workspace");
+        //localStorage.removeItem("activity");
+        //localStorage.removeItem("replay");
+        localStorage.removeItem("fromSandbox");
+        console.log("local storage cleared.");
+
+        //Call save
+        
+      }
     };
     setUp();
   }, [activity, isSandbox]);

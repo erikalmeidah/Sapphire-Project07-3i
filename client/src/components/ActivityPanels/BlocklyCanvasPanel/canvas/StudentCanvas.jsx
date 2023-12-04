@@ -181,30 +181,65 @@ export default function StudentCanvas({ activity }) {
     // once the activity state is set, set the workspace and save
     const setUp = async () => {
       activityRef.current = activity;
-      if (!workspaceRef.current && activity && Object.keys(activity).length !== 0) {
-        setWorkspace();
-
-        let onLoadSave = null;
-        const res = await getSaves(activity.id);
-        if (res.data) {
-          if (res.data.current) onLoadSave = res.data.current;
-          setSaves(res.data);
-        } else {
-          console.log(res.err);
+        if (!workspaceRef.current && activity && Object.keys(activity).length !== 0) {
+          setWorkspace();
+  
+          let onLoadSave = null;
+          const res = await getSaves(activity.id);
+          if (res.data) {
+            if (res.data.current) onLoadSave = res.data.current;
+            setSaves(res.data);
+          } else {
+            console.log(res.err);
+          }
+  
+          if (onLoadSave) {
+            let xml = window.Blockly.Xml.textToDom(onLoadSave.workspace);
+            window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
+            replayRef.current = onLoadSave.replay;
+            setLastSavedTime(getFormattedDate(onLoadSave.updated_at));
+          } else if (activity.template) {
+            let xml = window.Blockly.Xml.textToDom(activity.template);
+            window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
+          }
+  
+          pushEvent('load workspace');
+          workspaceRef.current.clearUndo();
         }
+      
+      if(localStorage.getItem("fromSandbox") == "true"){
+        console.log("Inside student canvas setup");
+        //Update Workspace
+        let workspaceXML = window.localStorage.getItem("workspace");
+        let workspaceDOM = window.Blockly.Xml.textToDom(workspaceXML);
+        console.log(workspaceXML);
+        window.Blockly.Xml.domToWorkspace(workspaceDOM, workspaceRef.current);
+        console.log("Workspace updated.");
 
-        if (onLoadSave) {
-          let xml = window.Blockly.Xml.textToDom(onLoadSave.workspace);
-          window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
-          replayRef.current = onLoadSave.replay;
-          setLastSavedTime(getFormattedDate(onLoadSave.updated_at));
-        } else if (activity.template) {
-          let xml = window.Blockly.Xml.textToDom(activity.template);
-          window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
-        }
+        //Update activity
+        //let activityXML = window.localStorage.getItem("activity");
+        //let activityDOM = window.Blockly.Xml.textToDom(activityXML);
+        //console.log(activityXML);
+        //activityRef.current = activityXML;
+        //window.Blockly.Xml(workspaceDOM, workspaceRef.current);
+        //console.log("activity updated.");
+        /*
+        //Update replay
+        let replayXML = window.localStorage.getItem("replay");
+        let replayDOM = window.Blockly.Xml.textToDom(replayXML);
+        console.log(replayXML);
+        //window.Blockly.Xml.domToWorkspace(workspaceDOM, workspaceRef.current);
+        console.log("replay updated");
+        */
+        //Clear local storage
+        localStorage.removeItem("workspace");
+        //localStorage.removeItem("activity");
+        //localStorage.removeItem("replay");
+        localStorage.removeItem("fromSandbox");
+        console.log("local storage cleared.");
 
-        pushEvent('load workspace');
-        workspaceRef.current.clearUndo();
+        //Call save
+        handleManualSave();
       }
     };
     setUp();

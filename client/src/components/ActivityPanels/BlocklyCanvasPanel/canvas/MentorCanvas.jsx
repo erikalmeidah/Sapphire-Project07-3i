@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../ActivityLevels.less';
-import { compileArduinoCode, handleUpdateWorkspace,  handleCreatorSaveActivityLevel, handleCreatorSaveActivity } from '../../Utils/helpers';
+import { compileArduinoCode, handleUpdateWorkspace,  handleCreatorSaveActivityLevel, handleCreatorSaveActivity, setLocalSandbox, handleSaveAsWorkspace } from '../../Utils/helpers';
 import { message, Spin, Row, Col, Alert, Menu, Dropdown } from 'antd';
 import CodeModal from '../modals/CodeModal';
 import ConsoleModal from '../modals/ConsoleModal';
@@ -18,6 +18,7 @@ import {
 import { getAuthorizedWorkspace } from '../../../../Utils/requests';
 import ArduinoLogo from '../Icons/ArduinoLogo';
 import PlotterLogo from '../Icons/PlotterLogo';
+import Replay from '../../../../views/Replay/Replay';
 
 let plotId = 1;
 
@@ -48,8 +49,8 @@ export default function MentorCanvas({ activity, isSandbox, setActivity,  isMent
   };
 
   useEffect(() => {
-    // once the activity state is set, set the workspace and save
-    const setUp = async () => {
+    // once the activity state is set, set the workspace and save 
+    const setUp = async () => {  
       const classroom = sessionStorage.getItem('classroomId');
       setClassroomId(classroom);
       activityRef.current = activity;
@@ -64,7 +65,42 @@ export default function MentorCanvas({ activity, isSandbox, setActivity,  isMent
         : window.Blockly.Xml.textToDom(activity.template);
       window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
         workspaceRef.current.clearUndo();
-      }
+      
+    }
+    if(localStorage.getItem("fromSandbox") == "true"){
+      console.log("Inside mentor canvas setup");
+      //Update Workspace
+      let workspaceXML = window.localStorage.getItem("workspace");
+      let workspaceDOM = window.Blockly.Xml.textToDom(workspaceXML);
+      console.log(workspaceXML);
+      window.Blockly.Xml.domToWorkspace(workspaceDOM, workspaceRef.current);
+      console.log("Workspace updated.");
+
+      //Update activity
+      //let activityXML = window.localStorage.getItem("activity");
+      //let activityDOM = window.Blockly.Xml.textToDom(activityXML);
+      //console.log(activityXML);
+      //activityRef.current = activityXML;
+      //window.Blockly.Xml(workspaceDOM, workspaceRef.current);
+      //console.log("activity updated.");
+      /*
+      //Update replay
+      let replayXML = window.localStorage.getItem("replay");
+      let replayDOM = window.Blockly.Xml.textToDom(replayXML);
+      console.log(replayXML);
+      //window.Blockly.Xml.domToWorkspace(workspaceDOM, workspaceRef.current);
+      console.log("replay updated");
+      */
+      //Clear local storage
+      localStorage.removeItem("workspace");
+      //localStorage.removeItem("activity");
+      //localStorage.removeItem("replay");
+      localStorage.removeItem("fromSandbox");
+      console.log("local storage cleared.");
+
+      //Call save
+      
+    }
     };
     setUp();
   }, [activity]);
