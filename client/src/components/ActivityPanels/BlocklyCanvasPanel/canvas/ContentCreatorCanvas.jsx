@@ -135,7 +135,13 @@ export default function ContentCreatorCanvas({
       }
       if(localStorage.getItem("fromSandbox") == "true"){
         console.log("Inside CC canvas setup");
+        if (workspaceRef.current) workspaceRef.current.clear();
+        if (ReplayRef.current) ReplayRef.current = [];
+        if(activityRef.current) activityRef.current = "Sandbox";
         //Update Workspace
+        workspaceRef.current = window.Blockly.inject('blockly-canvas', {
+          toolbox: document.getElementById('toolbox'),
+        });
         let workspaceXML = window.localStorage.getItem("workspace");
         let workspaceDOM = window.Blockly.Xml.textToDom(workspaceXML);
         console.log(workspaceXML);
@@ -143,29 +149,28 @@ export default function ContentCreatorCanvas({
         console.log("Workspace updated.");
 
         //Update activity
-        //let activityXML = window.localStorage.getItem("activity");
-        //let activityDOM = window.Blockly.Xml.textToDom(activityXML);
-        //console.log(activityXML);
-        //activityRef.current = activityXML;
-        //window.Blockly.Xml(workspaceDOM, workspaceRef.current);
-        //console.log("activity updated.");
-        /*
+        let activityJSON = window.localStorage.getItem("activity");
+        let parsedActivity = JSON.parse(activityJSON);
+        console.log(parsedActivity);
+        activityRef.current = parsedActivity;
+        console.log("activity updated.");
+        
         //Update replay
-        let replayXML = window.localStorage.getItem("replay");
-        let replayDOM = window.Blockly.Xml.textToDom(replayXML);
-        console.log(replayXML);
-        //window.Blockly.Xml.domToWorkspace(workspaceDOM, workspaceRef.current);
+        let replayJSON = window.localStorage.getItem("replay");
+        let parsedReplay = JSON.parse(replayJSON);
+        console.log(parsedReplay);
+        ReplayRef.current = parsedReplay;
         console.log("replay updated");
-        */
+      
         //Clear local storage
         localStorage.removeItem("workspace");
-        //localStorage.removeItem("activity");
-        //localStorage.removeItem("replay");
+        localStorage.removeItem("activity");
+        localStorage.removeItem("replay");
         localStorage.removeItem("fromSandbox");
         console.log("local storage cleared.");
 
         //Call save
-        
+        handleCreatorSave();
       }
     };
     setUp();

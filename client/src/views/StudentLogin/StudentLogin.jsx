@@ -73,7 +73,8 @@ export default function StudentLogin() {
       if (res.data) {
         setUserSession(res.data.jwt, JSON.stringify(res.data.students));
         if(localStorage.getItem("fromSandbox") == "true"){
-          navigate('/sandbox');
+          navigate('/workspace'); //FIXME This uses an existing activity to load/save work
+          //navigate('/sandbox');
         }else{
           navigate('/student');
         }

@@ -57,27 +57,21 @@ export default function PublicCanvas({ activity, isSandbox }) {
     let autosaveInterval = setInterval(async () => {
       console.log("Inside auto save!");
       
-      //Update local storage values
       //save workspace
       var xmlDom = Blockly.Xml.workspaceToDom(workspaceRef.current);
       var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
       window.localStorage.setItem("workspace", xmlText);
       console.log(xmlText);
-
-      
+  
       //save activity 
-      //let xmlDomActivity = window.Blockly.Xml.workspaceToDom(activity.current);
-      //var xmlTextActivity = Blockly.Xml.domToPrettyText(xmlDomActivity);
-      window.localStorage.setItem("activity", activityRef.current);
-      console.log(xmlTextActivity);
-
-      /*
+      let JSONActivity = JSON.stringify(activityRef.current);
+      window.localStorage.setItem("activity", JSONActivity);
+      console.log(JSONActivity);
+  
       //save replay
-      let xmlDomReplay = window.Blockly.Xml.workspaceToDom(replayRef.current);
-      var xmlTextReplay = Blockly.Xml.domToPrettyText(xmlDomReplay);
-      window.localStorage.setItem("replay", xmlTextReplay);
-      console.log(xmlTextReplay);
-      */
+      let JSONReplay = JSON.stringify(replayRef.current);
+      window.localStorage.setItem("replay", JSONReplay);
+      console.log(JSONReplay);
     }, 60000);
 
     // clean up - saves workspace and removes blockly div from DOM
@@ -96,20 +90,17 @@ export default function PublicCanvas({ activity, isSandbox }) {
     var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
     window.localStorage.setItem("workspace", xmlText);
     console.log(xmlText);
-
-    /*
+    console.log(workspaceRef.current);
+    
     //save activity 
-    let xmlDomActivity = window.Blockly.Xml.workspaceToDom(activity.current);
-    var xmlTextActivity = Blockly.Xml.domToPrettyText(xmlDomActivity);
-    window.localStorage.setItem("activity", xmlTextActivity);
-    console.log(xmlTextActivity);
+    let JSONActivity = JSON.stringify(activityRef.current);
+    window.localStorage.setItem("activity", JSONActivity);
+    console.log(JSONActivity);
 
     //save replay
-    let xmlDomReplay = window.Blockly.Xml.workspaceToDom(replayRef.current);
-    var xmlTextReplay = Blockly.Xml.domToPrettyText(xmlDomReplay);
-    window.localStorage.setItem("replay", xmlTextReplay);
-    console.log(xmlTextReplay);
-    */
+    let JSONReplay = JSON.stringify(replayRef.current);
+    window.localStorage.setItem("replay", JSONReplay);
+    console.log(JSONReplay);
 
     //Set previous page flag
     window.localStorage.setItem("fromSandbox", "true");
