@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useReducer } from 'react';
 import { Link } from 'react-router-dom';
 import '../../ActivityLevels.less';
-import { compileArduinoCode } from '../../Utils/helpers';
+import { compileArduinoCode, handlePublicSave, handleSave } from '../../Utils/helpers';
 import { message, Spin, Row, Col, Alert, Menu, Dropdown } from 'antd';
 import CodeModal from '../modals/CodeModal';
 import ConsoleModal from '../modals/ConsoleModal';
@@ -14,9 +14,23 @@ import {
 import ArduinoLogo from '../Icons/ArduinoLogo';
 import PlotterLogo from '../Icons/PlotterLogo';
 
+import LoginPromptModal from '../modals/LoginPromptModal';
+import { useNavigate } from 'react-router-dom';
+import { Modal, Button } from 'antd';
+import { getSaves } from '../../../../Utils/requests';
+import '../../../../Utils/requests.js'
+import '../../Utils/helpers'
+
 let plotId = 1;
 
 export default function PublicCanvas({ activity, isSandbox }) {
+  const [hoverSave, setHoverSave] = useState(false);
+  const [popupShow, setPopupShow] = useState(false);
+  const [userTypeShow, setUserTypeShow] = useState(false);
+  const navigate = useNavigate();
+  const replayRef = useRef([]);
+  const clicks = useRef(0);
+
   const [hoverUndo, setHoverUndo] = useState(false);
   const [hoverRedo, setHoverRedo] = useState(false);
   const [hoverCompile, setHoverCompile] = useState(false);
@@ -38,6 +52,63 @@ export default function PublicCanvas({ activity, isSandbox }) {
     });
   };
 
+  useEffect(() => {
+    // automatically save workspace every min
+    let autosaveInterval = setInterval(async () => {
+      console.log("Inside auto save!");
+      
+      //save workspace
+      var xmlDom = Blockly.Xml.workspaceToDom(workspaceRef.current);
+      var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+      window.localStorage.setItem("workspace", xmlText);
+      console.log(xmlText);
+  
+      //save activity 
+      let JSONActivity = JSON.stringify(activityRef.current);
+      window.localStorage.setItem("activity", JSONActivity);
+      console.log(JSONActivity);
+  
+      //save replay
+      let JSONReplay = JSON.stringify(replayRef.current);
+      window.localStorage.setItem("replay", JSONReplay);
+      console.log(JSONReplay);
+    }, 60000);
+
+    // clean up - saves workspace and removes blockly div from DOM
+    return async () => {
+      clearInterval(autosaveInterval);
+    };
+  }, []);
+  
+
+  async function handleManualSave(goTo) {
+    //Manual save using local storage
+    console.log("Inside handle save!");
+
+    //save workspace
+    var xmlDom = Blockly.Xml.workspaceToDom(workspaceRef.current);
+    var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+    window.localStorage.setItem("workspace", xmlText);
+    console.log(xmlText);
+    console.log(workspaceRef.current);
+    
+    //save activity 
+    let JSONActivity = JSON.stringify(activityRef.current);
+    window.localStorage.setItem("activity", JSONActivity);
+    console.log(JSONActivity);
+
+    //save replay
+    let JSONReplay = JSON.stringify(replayRef.current);
+    window.localStorage.setItem("replay", JSONReplay);
+    console.log(JSONReplay);
+
+    //Set previous page flag
+    window.localStorage.setItem("fromSandbox", "true");
+
+    //Navigate
+    navigate(goTo);
+  };
+  
   useEffect(() => {
     // once the activity state is set, set the workspace and save
     const setUp = async () => {
@@ -154,6 +225,15 @@ export default function PublicCanvas({ activity, isSandbox }) {
     </Menu>
   );
 
+  function handleSaveClick() {
+    console.log("clicked!")
+  }
+
+  function handleExistingAccount() {
+    setPopupShow(false);
+    setUserTypeShow(true);
+  }
+
   return (
     <div id='horizontal-container' className='flex flex-column'>
       <div className='flex flex-row'>
@@ -182,10 +262,26 @@ export default function PublicCanvas({ activity, isSandbox }) {
                       </Col>
                     </Row>
                   </Col>
-                  <Col flex='auto' />
-
                   <Col flex={'200px'}>
                     <Row>
+                      <Col className='flex flex-row' id='icon-align'>
+                          {}
+                          <button
+                            onClick={() => setPopupShow(true)}
+                            id='link'
+                            className='flex flex-column'
+                          >
+                            <i
+                              id='icon-btn'
+                              className='fa fa-save'
+                              onMouseEnter={() => setHoverSave(true)}
+                              onMouseLeave={() => setHoverSave(false)}
+                            />
+                            {hoverSave && (
+                              <div className='popup ModalCompile4'>Save</div>
+                            )}
+                          </button>
+                        </Col>
                       <Col className='flex flex-row'>
                         <button
                           onClick={handleUndo}
@@ -270,6 +366,26 @@ export default function PublicCanvas({ activity, isSandbox }) {
               </Col>
             </Row>
             <div id='blockly-canvas' />
+            <LoginPromptModal loginTrigger={popupShow} setLoginTrigger={setPopupShow}>
+              <h2>Login To Save Your Work</h2>
+              <div>
+                <button className='login-prompt-button' onClick={() => handleExistingAccount()}>I already have an account!</button>
+                <button className='login-prompt-button'>I want to create an account!</button>
+              </div>
+              <div>
+                <button className="login-prompt-button" onClick={() => setPopupShow(false)}>I want to keep working</button>
+              </div>
+            </LoginPromptModal>
+            <LoginPromptModal loginTrigger={userTypeShow} setLoginTrigger={setUserTypeShow}>
+              <h2>I am a...</h2>
+              <div>
+                <button className='login-prompt-button'>
+                  <a className='student-login-prompt' onClick={() => handleManualSave("/")}>Student!</a>
+                </button>
+                <button className='login-prompt-button' onClick={() => handleManualSave("/teacherlogin")}>Teacher!</button>
+                <button className='login-prompt-button' onClick={() => handleManualSave("/teacherlogin")}>Content Creator!</button>
+              </div>
+            </LoginPromptModal>
           </Spin>
         </div>
         <ConsoleModal

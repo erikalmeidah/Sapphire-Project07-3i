@@ -6,6 +6,7 @@ import {
   createAuthorizedWorkspace,
   updateAuthorizedWorkspace,
   updateActivityTemplate,
+  savePublicSave,
 } from '../../../Utils/requests';
 import { message } from 'antd';
 
@@ -190,6 +191,12 @@ export const handleSave = async (activityId, workspaceRef, replay) => {
   let xml = window.Blockly.Xml.workspaceToDom(workspaceRef.current);
   let xml_text = window.Blockly.Xml.domToText(xml);
   return await saveWorkspace(activityId, xml_text, replay);
+};
+
+export const handlePublicSave = async (workspaceRef) => {
+  let xml = window.Blockly.Xml.workspaceToDom(workspaceRef.current);
+  let xml_text = window.Blockly.Xml.domToText(xml);
+  return await savePublicSave(xml_text);
 };
 
 export const handleCreatorSaveActivityLevel = async (activityId, workspaceRef, blocksList) => {

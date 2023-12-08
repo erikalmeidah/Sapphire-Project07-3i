@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../ActivityLevels.less';
-import { compileArduinoCode, handleUpdateWorkspace,  handleCreatorSaveActivityLevel, handleCreatorSaveActivity } from '../../Utils/helpers';
+import { compileArduinoCode, handleUpdateWorkspace,  handleCreatorSaveActivityLevel, handleCreatorSaveActivity, setLocalSandbox, handleSaveAsWorkspace } from '../../Utils/helpers';
 import { message, Spin, Row, Col, Alert, Menu, Dropdown } from 'antd';
 import CodeModal from '../modals/CodeModal';
 import ConsoleModal from '../modals/ConsoleModal';
@@ -18,6 +18,7 @@ import {
 import { getAuthorizedWorkspace } from '../../../../Utils/requests';
 import ArduinoLogo from '../Icons/ArduinoLogo';
 import PlotterLogo from '../Icons/PlotterLogo';
+import Replay from '../../../../views/Replay/Replay';
 
 let plotId = 1;
 
@@ -39,6 +40,7 @@ export default function MentorCanvas({ activity, isSandbox, setActivity,  isMent
   const [forceUpdate] = useReducer((x) => x + 1, 0);
   const workspaceRef = useRef(null);
   const activityRef = useRef(null);
+  const ReplayRef = useRef([]);
   const navigate = useNavigate();
 
   const setWorkspace = () => {
@@ -48,8 +50,8 @@ export default function MentorCanvas({ activity, isSandbox, setActivity,  isMent
   };
 
   useEffect(() => {
-    // once the activity state is set, set the workspace and save
-    const setUp = async () => {
+    // once the activity state is set, set the workspace and save 
+    const setUp = async () => {  
       const classroom = sessionStorage.getItem('classroomId');
       setClassroomId(classroom);
       activityRef.current = activity;
@@ -64,7 +66,47 @@ export default function MentorCanvas({ activity, isSandbox, setActivity,  isMent
         : window.Blockly.Xml.textToDom(activity.template);
       window.Blockly.Xml.domToWorkspace(xml, workspaceRef.current);
         workspaceRef.current.clearUndo();
-      }
+      
+    }
+    if(localStorage.getItem("fromSandbox") == "true"){
+      console.log("Inside mentor canvas setup");
+      if (workspaceRef.current) workspaceRef.current.clear();
+      if (ReplayRef.current) ReplayRef.current = [];
+      if(activityRef.current) activityRef.current = "Sandbox";
+      //Update Workspace
+      workspaceRef.current = window.Blockly.inject('blockly-canvas', {
+        toolbox: document.getElementById('toolbox'),
+      });
+      let workspaceXML = window.localStorage.getItem("workspace");
+      let workspaceDOM = window.Blockly.Xml.textToDom(workspaceXML);
+      console.log(workspaceXML);
+      window.Blockly.Xml.domToWorkspace(workspaceDOM, workspaceRef.current);
+      console.log("Workspace updated.");
+
+      //Update activity
+      let activityJSON = window.localStorage.getItem("activity");
+      let parsedActivity = JSON.parse(activityJSON);
+      console.log(parsedActivity);
+      activityRef.current = parsedActivity;
+      console.log("activity updated.");
+      
+      //Update replay
+      let replayJSON = window.localStorage.getItem("replay");
+      let parsedReplay = JSON.parse(replayJSON);
+      console.log(parsedReplay);
+      ReplayRef.current = parsedReplay;
+      console.log("replay updated");
+    
+      //Clear local storage
+      localStorage.removeItem("workspace");
+      localStorage.removeItem("activity");
+      localStorage.removeItem("replay");
+      localStorage.removeItem("fromSandbox");
+      console.log("local storage cleared.");
+
+      //Call save
+      handleSave();
+    }
     };
     setUp();
   }, [activity]);

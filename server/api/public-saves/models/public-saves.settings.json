@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "public_saves",
+  "info": {
+    "name": "Public Saves",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "workspace": {
+      "type": "text"
+    }
+  }
+}
