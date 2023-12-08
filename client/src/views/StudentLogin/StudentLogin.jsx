@@ -72,7 +72,12 @@ export default function StudentLogin() {
       const res = await postJoin(joinCode, ids);
       if (res.data) {
         setUserSession(res.data.jwt, JSON.stringify(res.data.students));
-        navigate('/student');
+        if(localStorage.getItem("fromSandbox") == "true"){
+          navigate('/workspace'); //FIXME This uses an existing activity to load/save work
+          //navigate('/sandbox');
+        }else{
+          navigate('/student');
+        }
       } else {
         message.error('Name or Animal not selected.');
       }
